@@ -1,0 +1,71 @@
+<?php
+
+namespace repositories;
+
+use PDO;
+
+class TransactionRepository
+{
+    private PDO $pdo;
+
+    public function __construct(PDO $pdo)
+    {
+        $this->pdo = $pdo;
+    }
+
+    public function addTransaction(
+        int $amount,
+        int $userId,
+        string $transactionType,
+        string $date,
+        ?int $cardId,
+        string $paymentMethod
+    ): bool {
+        $sql = "
+            INSERT INTO Transaction (
+                amount,
+                User_id,
+                transaction_type,
+                transaction_date,
+                card_id,
+                payment_method
+            )
+            VALUES (
+                :amount,
+                :userId,
+                :transactionType,
+                :date,
+                :cardId,
+                :paymentMethod
+            )
+        ";
+
+        $stmt = $this->pdo->prepare($sql);
+
+        return $stmt->execute([
+            ':amount' => $amount,
+            ':userId' => $userId,
+            ':transactionType' => $transactionType,
+            ':date' => $date,
+            ':cardId' => $cardId,
+            ':paymentMethod' => $paymentMethod,
+        ]);
+    }
+
+    public function deleteTransactionById(int $id): bool
+    {
+        $sql = "DELETE FROM Transaction WHERE id = :id";
+        $stmt = $this->pdo->prepare($sql);
+
+        return $stmt->execute([':id' => $id]);
+    }
+
+    public function getTransactionsByUserId(int $userId): array
+    {
+        $sql = "SELECT * FROM Transaction WHERE User_id = :userId";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':userId' => $userId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+}
