@@ -13,6 +13,15 @@ class CardRepository
         $this->pdo = $pdo;
     }
 
+    public function cardExists(string $cardNumber): bool
+    {
+        $sql = "SELECT COUNT(*) FROM airlinemanagement.card WHERE card_number = :cardNumber";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':cardNumber' => $cardNumber]);
+
+        return $stmt->fetchColumn() > 0;
+    }
+
     public function addCard(string $cardNumber, string $expiryDate): int
     {
         $sql = "

@@ -16,7 +16,7 @@ class VerificationCodeRepository
     public function addVerificationCode(int $userId, string $verificationCode, string $createDate): bool
     {
         $sql = "
-            INSERT INTO Verification (
+            INSERT INTO  airlinemanagement.verification (
                 User_id,
                 Verification_code,
                 used,
@@ -44,7 +44,7 @@ class VerificationCodeRepository
     {
         $sql = "
             SELECT * 
-            FROM Verification 
+            FROM airlinemanagement.Verification 
             WHERE User_id = :userId AND Verification_code = :verificationCode AND used = 0
         ";
 
@@ -60,7 +60,7 @@ class VerificationCodeRepository
 
     public function markAsUsed(int $verificationId): bool
     {
-        $sql = "UPDATE Verification SET used = 1 WHERE Verification_id = :verificationId";
+        $sql = "UPDATE airlinemanagement.Verification SET used = 1 WHERE Verification_id = :verificationId";
         $stmt = $this->pdo->prepare($sql);
 
         return $stmt->execute([

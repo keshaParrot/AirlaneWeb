@@ -17,7 +17,7 @@ class UserRepository
     {
         $walletBalance = 0.00;
         $cardId = null;
-        $sql = "INSERT INTO Users (email, password, first_name, last_name, wallet_balance, card_id)
+        $sql = "INSERT INTO airlinemanagement.Users (email, password, first_name, last_name, wallet_balance, card_id)
                 VALUES (:email, :password, :first_name, :last_name, :wallet_balance, :card_id)";
         $stmt = $this->pdo->prepare($sql);
 
@@ -33,7 +33,7 @@ class UserRepository
 
     public function getById(int $id): ?array
     {
-        $sql = "SELECT * FROM Users WHERE id = :id";
+        $sql = "SELECT * FROM airlinemanagement.Users WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':id' => $id]);
 
@@ -76,7 +76,7 @@ class UserRepository
             return false;
         }
 
-        $sql = "UPDATE Users SET " . implode(', ', $fields) . " WHERE id = :id";
+        $sql = "UPDATE airlinemanagement.Users SET " . implode(', ', $fields) . " WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
 
         return $stmt->execute($params);
@@ -84,7 +84,7 @@ class UserRepository
 
     public function getByEmail($email): ?array
     {
-        $sql = "SELECT * FROM Users WHERE email = :email";
+        $sql = "SELECT * FROM airlinemanagement.Users WHERE email = :email";
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':email', $email, PDO::PARAM_STR);
         $stmt->execute();
@@ -96,7 +96,7 @@ class UserRepository
 
     public function changePassword(int $id, string $newPassword): bool
     {
-        $sql = "UPDATE Users SET password = :newPassword WHERE id = :id";
+        $sql = "UPDATE airlinemanagement.Users SET password = :newPassword WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
 
         return $stmt->execute([
@@ -107,7 +107,7 @@ class UserRepository
 
     public function addMoneyToWallet($id, $amount): bool
     {
-        $sql = "UPDATE Users 
+        $sql = "UPDATE airlinemanagement.Users 
             SET wallet_balance = wallet_balance + :amount 
             WHERE id = :id";
 
@@ -120,7 +120,7 @@ class UserRepository
     }
     public function subtractMoneyFromWallet($id, $amount): bool
     {
-        $sql = "UPDATE Users 
+        $sql = "UPDATE airlinemanagement.Users 
             SET wallet_balance = wallet_balance - :amount 
             WHERE id = :id AND wallet_balance >= :amount";
 
@@ -129,6 +129,18 @@ class UserRepository
         return $stmt->execute([
             ':id' => $id,
             ':amount' => $amount
+        ]);
+    }
+    public function addCardToUser(int $userId, int $cardId): bool
+    {
+        $sql = "UPDATE airlinemanagement.Users 
+                SET card_id = :cardId 
+                WHERE id = :userId";
+
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([
+            ':userId' => $userId,
+            ':cardId' => $cardId
         ]);
     }
 }

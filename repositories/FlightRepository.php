@@ -118,4 +118,18 @@ class FlightRepository
             ':airplaneId' => $airplaneId,
         ]);
     }
+    public function getById(int $flightId): ?object
+    {
+        $sql = "SELECT * FROM airlinemanagement.flights WHERE id = :flightId";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':flightId' => $flightId]);
+
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$data) {
+            return null;
+        }
+
+        return (object) $data;
+    }
 }

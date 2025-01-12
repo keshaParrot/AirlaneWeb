@@ -1,45 +1,80 @@
 <?php
 
-namespace controllers;
+require_once 'services/FlightService.php';
+require_once 'repositories/FlightRepository.php';
+require_once 'config/Database.php';
 
+use repositories\FlightRepository;
 use services\FlightService;
+use config\Database;
 
-class FlightController {
-    private FlightService $flightService;
+// Database connection
+$pdo = Database::connect();
 
-    public function __construct(FlightService $flightService)
-    {
-        $this->flightService = $flightService;
-    }
+$flightRepository = new FlightRepository($pdo);
+$flightService = new FlightService($flightRepository);
 
-    public function getFilteredFlights(array $queryParams): void
-    {
-        $flights = $this->flightService->getFilteredFlights(
-            $queryParams['departure'] ?? null,
-            $queryParams['destination'] ?? null,
-            isset($queryParams['minPrice']) ? (float)$queryParams['minPrice'] : null,
-            isset($queryParams['maxPrice']) ? (float)$queryParams['maxPrice'] : null,
-            $queryParams['departureDate'] ?? null,
-            $queryParams['timeFilter'] ?? null,
-            isset($queryParams['limit']) ? (int)$queryParams['limit'] : 10,
-            isset($queryParams['offset']) ? (int)$queryParams['offset'] : 0
+header('Content-Type: application/json');
+
+try {
+    $method = $_SERVER['REQUEST_METHOD'];
+    $path = explode('/', trim($_SERVER['PATH_INFO'], '/'));
+
+    if ($method === 'GET' && $path[0] === 'flights') {
+        // GET /flights with optional query parameters
+        $departure = $_GET['departure'] ?? null;
+        $destination = $_GET['destination'] ?? null;
+        $minPrice = isset($_GET['minPrice']) ? (float)$_GET['minPrice'] : null;
+        $maxPrice = isset($_GET['maxPrice']) ? (float)$_GET['maxPrice'] : null;
+        $departureDate = $_GET['departureDate'] ?? null;
+        $timeFilter = $_GET['timeFilter'] ?? null;
+        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+        $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+
+        $flights = $flightService->getFilteredFlights(
+            $departure,
+            $destination,
+            $minPrice,
+            $maxPrice,
+            $departureDate,
+            $timeFilter,
+            $limit,
+            $offset
         );
 
         echo json_encode($flights);
-    }
+    } elseif ($method === 'POST' && $path[0] === 'flights') {
+        // POST /flights to add a new flight
+        $data = json_decode(file_get_contents('php://input'), true);
 
-    public function addFlight(array $requestBody): void
-    {
-        $result = $this->flightService->addFlight(
-            (float)$requestBody['price'],
-            $requestBody['departureDateTime'],
-            $requestBody['arrivalDateTime'],
-            (int)$requestBody['departureAirportId'],
-            (int)$requestBody['destinationAirportId'],
-            (int)$requestBody['airplaneId'],
-            (int)$requestBody['createdBy']
+        $price = $data['price'] ?? null;
+        $departureDateTime = $data['departureDateTime'] ?? null;
+        $arrivalDateTime = $data['arrivalDateTime'] ?? null;
+        $departureAirportId = $data['departureAirportId'] ?? null;
+        $destinationAirportId = $data['destinationAirportId'] ?? null;
+        $airplaneId = $data['airplaneId'] ?? null;
+        $createdBy = $data['createdBy'] ?? null;
+
+        if (!$price || !$departureDateTime || !$arrivalDateTime || !$departureAirportId || !$destinationAirportId || !$airplaneId || !$createdBy) {
+            throw new RuntimeException("Missing required fields.");
+        }
+
+        $success = $flightService->addFlight(
+            (float)$price,
+            $departureDateTime,
+            $arrivalDateTime,
+            (int)$departureAirportId,
+            (int)$destinationAirportId,
+            (int)$airplaneId,
+            (int)$createdBy
         );
 
-        echo json_encode(['success' => $result]);
+        echo json_encode(["success" => $success]);
+    } else {
+        http_response_code(404);
+        echo json_encode(["error" => "Endpoint not found"]);
     }
+} catch (Exception $e) {
+    http_response_code(400);
+    echo json_encode(["error" => $e->getMessage()]);
 }

@@ -72,11 +72,18 @@ class PaymentService
         return $this->addTransaction('deposit',$userId, $amount, $transactionType, $cardId, $paymentMethod);
     }
 
-
     //api
-    public function assignCardToUser($id, $cardNumber, $expiryDate)
+    public function assignCardToUser($userId, $cardNumber, $expiryDate)
     {
-        $this->validateCardNumber($cardNumber);
+        $user = $this->userRepository->getById($userId);
+        if (!$user) {
+            throw new \RuntimeException("User not found.");
+        }
+        if(!$this->validateCardNumber($cardNumber)){
+            throw new \RuntimeException("card number is invalid.");
+        }
+        $cardId = $this->cardRepository->addCard($cardNumber, $expiryDate);
+        $this->userRepository->addCardToUser($userId, $cardId);
     }
 
     //api
@@ -101,6 +108,7 @@ class PaymentService
         if (!$card) {
             throw new \RuntimeException("card for provided user not found.");
         }
+        //TODO here is bug
         if (!$this->validateUserCard($cardId)){
             throw new \RuntimeException("card not valid.");
         }

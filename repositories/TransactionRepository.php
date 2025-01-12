@@ -22,7 +22,7 @@ class TransactionRepository
         string $paymentMethod
     ): bool {
         $sql = "
-            INSERT INTO Transaction (
+            INSERT INTO airlinemanagement.Transaction (
                 amount,
                 User_id,
                 transaction_type,
@@ -54,7 +54,7 @@ class TransactionRepository
 
     public function deleteTransactionById(int $id): bool
     {
-        $sql = "DELETE FROM Transaction WHERE id = :id";
+        $sql = "DELETE FROM airlinemanagement.Transaction WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
 
         return $stmt->execute([':id' => $id]);
@@ -62,7 +62,7 @@ class TransactionRepository
 
     public function getTransactionsByUserId(int $userId): array
     {
-        $sql = "SELECT * FROM Transaction WHERE User_id = :userId";
+        $sql = "SELECT * FROM airlinemanagement.Transaction WHERE User_id = :userId";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':userId' => $userId]);
 

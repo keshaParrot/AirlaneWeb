@@ -18,8 +18,7 @@ class TicketRepository
         int $flightId,
         int $userId,
         string $userName,
-        float $price,
-        int $transactionId
+        float $price
     ): bool {
         $sql = "
             INSERT INTO airlinemanagement.Purchased_ticket (
@@ -28,8 +27,7 @@ class TicketRepository
                 Flight_id,
                 User_id,
                 user_name,
-                price,
-                transaction_id
+                price
             )
             VALUES (
                 :ticketNumber,
@@ -37,8 +35,7 @@ class TicketRepository
                 :flightId,
                 :userId,
                 :userName,
-                :price,
-                :transactionId
+                :price
             )
         ";
         $ticketNumber = uniqid('TICKET_', true);
@@ -50,8 +47,7 @@ class TicketRepository
             ':flightId' => $flightId,
             ':userId' => $userId,
             ':userName' => $userName,
-            ':price' => $price,
-            ':transactionId' => $transactionId,
+            ':price' => $price
         ]);
     }
 
