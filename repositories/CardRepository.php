@@ -2,6 +2,7 @@
 
 namespace repositories;
 
+use MongoDB\BSON\ObjectId;
 use PDO;
 
 class CardRepository
@@ -65,7 +66,7 @@ class CardRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getByCardId(int $cardId): ?array
+    public function getByCardId(int $cardId): ?Object
     {
         $sql = "SELECT * FROM airlinemanagement.card WHERE id = :cardId";
         $stmt = $this->pdo->prepare($sql);

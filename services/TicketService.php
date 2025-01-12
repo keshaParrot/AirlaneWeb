@@ -42,8 +42,38 @@ class TicketService
         }
     }
 
-    public function refundTicket(){
+    public function refundTicket($userId, $ticketId){
+        $user = $this->userRepository->getById($userId);
+        if (!$user) {
+            throw new \RuntimeException("User not found.");
+        }
 
+        $ticket = $this->ticketRepository->getTicketById($ticketId);
+        if ($ticket){
+            if ($this->isTicketCanBeRefunded($userId)){
+                $transactionAmount = $ticket->price;
+
+                if($this->paymentService->depositMoneyFromSystem($transactionAmount, $userId, "REFUND_TICKET")){
+                    $this->ticketRepository->deleteTicketById($ticketId);
+                }
+            }
+        }else{
+            throw new \RuntimeException("ticket not found.");
+        }
+    }
+
+    private function isTicketCanBeRefunded($ticket): bool{
+        $flight = $this->flightRepository->getById($ticket->flightId);
+        $now = new DateTime()->format('Y-m-d H:i:s');
+
+        if($now > $flight->arrivalDate->modify('+2 hours')){
+            return false;
+        }
+        if($now > $ticket->purchaseDate->modify('+6 hours')){
+            return false;
+        }
+
+        return true;
     }
 
     public function getAllTicketsByUserId($userId){

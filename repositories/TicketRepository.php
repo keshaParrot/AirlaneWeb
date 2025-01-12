@@ -67,4 +67,14 @@ class TicketRepository
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getTicketById(int $ticketId): ?object
+    {
+        $sql = "SELECT * FROM airlinemanagement.Purchased_ticket WHERE id = :ticketId";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':userId' => $ticketId]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC)?:null;
+    }
+
 }

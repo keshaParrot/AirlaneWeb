@@ -1,18 +1,24 @@
 <?php
 
-require_once 'services/FlightService.php';
-require_once 'repositories/FlightRepository.php';
-require_once 'config/Database.php';
+require_once __DIR__ . '/../services/FlightService.php';
+require_once __DIR__ . '/../repositories/FlightRepository.php';
+require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../Middleware.php';
+require_once __DIR__ . '/../services/AuthService.php';
 
 use repositories\FlightRepository;
+use services\AuthService;
 use services\FlightService;
 use config\Database;
 
 // Database connection
 $pdo = Database::connect();
+$config = include './config/config.php';
+$jwtSecret = $config['jwtSecret'];
 
 $flightRepository = new FlightRepository($pdo);
 $flightService = new FlightService($flightRepository);
+$authService = new AuthService(new Repositories\UserRepository($pdo), $jwtSecret);
 
 header('Content-Type: application/json');
 
@@ -45,6 +51,9 @@ try {
         echo json_encode($flights);
     } elseif ($method === 'POST' && $path[0] === 'flights') {
         // POST /flights to add a new flight
+        $user = authMiddleware($jwtSecret); // Authenticate user
+        authorizeSuperuser($user); // Ensure user is a superuser
+
         $data = json_decode(file_get_contents('php://input'), true);
 
         $price = $data['price'] ?? null;

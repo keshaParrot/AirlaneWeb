@@ -1,8 +1,8 @@
 <?php
-require_once 'services/AirportService.php';
-require_once 'repositories/AirportRepository.php';
-require_once 'config/Database.php';
-require_once 'domain/Airport.php';
+require_once __DIR__ . '/../services/AirportService.php';
+require_once __DIR__ . '/../repositories/AirportRepository.php';
+require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../domain/Airport.php';
 
 use repositories\AirportRepository;
 use services\AirportService;

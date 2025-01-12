@@ -54,22 +54,31 @@ class PaymentService
     }
 
     //api
-    public function depositMoney($amount,
+    public function depositMoneyFromDebit($amount,
                                  $userId,
-                                 $transactionType,
-                                 $cardId,
-                                 $paymentMethod): bool
+                                 $cardId): bool
     {
         $user = $this->userRepository->getById($userId);
         if (!$user) {
             throw new \RuntimeException("User not found.");
         }
 
-        elseif ($paymentMethod === 'debit' && !$this->validateUserCard($cardId)) {
+        if (!$this->validateUserCard($cardId)) {
             throw new \RuntimeException("card does not exist or you dont have a money.");
         }
 
-        return $this->addTransaction('deposit',$userId, $amount, $transactionType, $cardId, $paymentMethod);
+        return $this->addTransaction('deposit',$userId, $amount, "DEPOSIT", $cardId, "debit");
+    }
+    public function depositMoneyFromSystem($amount,
+                                 $userId,
+                                 $transactionType): bool
+    {
+        $user = $this->userRepository->getById($userId);
+        if (!$user) {
+            throw new \RuntimeException("User not found.");
+        }
+
+        return $this->addTransaction('deposit',$userId, $amount, $transactionType, null ,"system");
     }
 
     //api
@@ -109,7 +118,7 @@ class PaymentService
             throw new \RuntimeException("card for provided user not found.");
         }
         //TODO here is bug
-        if (!$this->validateUserCard($cardId)){
+        if (!$this->validateCardNumber($cardId)){
             throw new \RuntimeException("card not valid.");
         }
         return true;
@@ -134,17 +143,18 @@ class PaymentService
             if ($paymentMethod === 'Wallet'){
                 $this->userRepository->subtractMoneyFromWallet($userId, $amount);
             }
-            if ($paymentMethod === 'Debit') {
+            else if ($paymentMethod === 'Debit') {
                 //take money from debit card
+            }
+            else{
+                throw new \RuntimeException("Invalid payment method.");
             }
         }
         if ($action === 'deposit' ) {
             if ($paymentMethod === 'System'){
-                //it means super user can accept refund so we return back money
-                //which customer pay for ticket
                 $this->userRepository->addMoneyToWallet($userId, $amount);
             }
-            if ($paymentMethod === 'Debit'){
+            else if ($paymentMethod === 'Debit'){
                 //here will be logic of validate bank card is amount good, and if yes pay money
                 $this->userRepository->addMoneyToWallet($userId, $amount);
             }

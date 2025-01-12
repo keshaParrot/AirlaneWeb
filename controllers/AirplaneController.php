@@ -1,9 +1,9 @@
 <?php
 
-require_once 'services/AirplaneService.php';
-require_once 'repositories/AirplaneRepository.php';
-require_once 'config/Database.php';
-require_once 'domain/Airplane.php';
+require_once __DIR__ . '/../services/AirplaneService.php';
+require_once __DIR__ . '/../repositories/AirplaneRepository.php';
+require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../domain/Airplane.php';
 
 use repositories\AirplaneRepository;
 use services\AirplaneService;

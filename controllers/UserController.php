@@ -2,21 +2,18 @@
 
 require_once 'services/UserService.php';
 require_once 'repositories/UserRepository.php';
-require_once 'repositories/VerificationCodeRepository.php';
 require_once 'config/Database.php';
 require_once 'domain/User.php';
 
-use repositories\UserRepository;
-use repositories\VerificationCodeRepository;
 use services\UserService;
+use repositories\UserRepository;
 use config\Database;
 
 // Database connection
 $pdo = Database::connect();
 
 $userRepository = new UserRepository($pdo);
-$verificationCodeRepository = new VerificationCodeRepository($pdo);
-$userService = new UserService($userRepository, $verificationCodeRepository);
+$userService = new UserService($userRepository);
 
 header('Content-Type: application/json');
 
@@ -24,22 +21,7 @@ try {
     $method = $_SERVER['REQUEST_METHOD'];
     $path = explode('/', trim($_SERVER['PATH_INFO'], '/'));
 
-    if ($method === 'POST' && $path[0] === 'users' && $path[1] === 'register') {
-        // POST /users/register
-        $data = json_decode(file_get_contents('php://input'), true);
-
-        $email = $data['email'] ?? null;
-        $password = $data['password'] ?? null;
-        $firstName = $data['firstName'] ?? null;
-        $lastName = $data['lastName'] ?? null;
-
-        if (!$email || !$password || !$firstName || !$lastName) {
-            throw new RuntimeException("Missing required fields.");
-        }
-
-        $success = $userService->save($email, $password, $firstName, $lastName);
-        echo json_encode(["success" => $success]);
-    } elseif ($method === 'PUT' && $path[0] === 'users' && $path[1] === 'update') {
+    if ($method === 'PUT' && $path[0] === 'users' && $path[1] === 'update') {
         // PUT /users/update
         $data = json_decode(file_get_contents('php://input'), true);
 
@@ -67,23 +49,6 @@ try {
         $user = $userService->getById((int)$id);
         if (!$user) {
             throw new RuntimeException("User not found.");
-        }
-
-        echo json_encode($user);
-    } elseif ($method === 'POST' && $path[0] === 'users' && $path[1] === 'login') {
-        // POST /users/login
-        $data = json_decode(file_get_contents('php://input'), true);
-
-        $email = $data['email'] ?? null;
-        $password = $data['password'] ?? null;
-
-        if (!$email || !$password) {
-            throw new RuntimeException("Email and password are required.");
-        }
-
-        $user = $userService->login($email, $password);
-        if (!$user) {
-            throw new RuntimeException("Invalid email or password.");
         }
 
         echo json_encode($user);
