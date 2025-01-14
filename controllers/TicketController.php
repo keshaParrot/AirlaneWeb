@@ -1,5 +1,7 @@
 <?php
 
+namespace controllers;
+
 require_once __DIR__ . '/../services/TicketService.php';
 require_once __DIR__ . '/../services/PaymentService.php';
 require_once __DIR__ . '/../repositories/TicketRepository.php';

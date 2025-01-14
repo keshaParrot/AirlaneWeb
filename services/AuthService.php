@@ -25,6 +25,14 @@ class AuthService
             throw new \Exception("A user with this email already exists.");
         }
 
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new \Exception("Invalid email format.");
+        }
+        if (strlen($password) < 6) {
+            throw new \Exception("Password must be at least 8 characters.");
+        }
+
+
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
         return $this->userRepository->save($email, $hashedPassword, $firstName, $lastName);
     }

@@ -1,15 +1,18 @@
 <?php
 
+namespace controllers;
+
 require_once __DIR__ . '/../services/AuthService.php';
 
+use repositories\UserRepository;
 use services\AuthService;
 
 class AuthController {
     private AuthService $service;
 
     public function __construct($pdo, $jwtSecret) {
-
-        $this->service = new AuthService($pdo, $jwtSecret);
+        $repository = new UserRepository($pdo);
+        $this->service = new AuthService($repository, $jwtSecret);
     }
 
     public function handleRequest($method, $path) {
@@ -59,13 +62,13 @@ class AuthController {
 
     private function register() {
         $data = json_decode(file_get_contents('php://input'), true);
-        if (!$data || !isset($data['username']) || !isset($data['password'])) {
+        if (!$data || !isset($data['email']) || !isset($data['lastname']) || !isset($data['firstname']) || !isset($data['password'])) {
             http_response_code(400);
             echo json_encode(["error" => "Invalid input"]);
             return;
         }
 
-        $response = $this->service->register($data);
+        $response = $this->service->register($data['email'], $data['password'], $data['firstname'], $data['lastname']);
         if ($response) {
             http_response_code(201);
             echo json_encode($response);

@@ -1,5 +1,7 @@
 <?php
 
+namespace controllers;
+
 require_once __DIR__ . '/../services/FlightService.php';
 require_once __DIR__ . '/../repositories/FlightRepository.php';
 require_once __DIR__ . '/../services/AuthService.php';

@@ -1,0 +1,15 @@
+{
+  "name": "ivandenysiuk/ticketweb",
+  "description": "description",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Ivan Denysiuk",
+      "email": "ivan.denysiuk17@gmail.com"
+    }
+  ],
+  "require": {
+    "kreait/firebase-php": "^7.0"
+  }
+}

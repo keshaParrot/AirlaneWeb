@@ -14,6 +14,14 @@ require_once __DIR__ . '/controllers/TicketController.php';
 require_once __DIR__ . '/controllers/UserController.php';
 
 use config\Database;
+use controllers\AirplaneController;
+use controllers\AirportController;
+use controllers\AuthController;
+use controllers\FlightController;
+use controllers\PasswordRecoveryController;
+use controllers\PaymentController;
+use controllers\TicketController;
+use controllers\UserController;
 
 // Підключення до бази даних
 $pdo = Database::connect();
@@ -71,7 +79,7 @@ try {
             break;
 
         case 'users':
-            $controller = new UserController($pdo);
+            $controller = new UserController($pdo, $jwtSecret);
             $controller->handleRequest($method, $path);
             break;
 
