@@ -1,52 +1,66 @@
 <?php
 
-require_once 'services/TicketService.php';
-require_once 'services/PaymentService.php';
-require_once 'repositories/TicketRepository.php';
-require_once 'repositories/FlightRepository.php';
-require_once 'repositories/UserRepository.php';
-require_once 'config/Database.php';
-require_once 'domain/Ticket.php';
-require_once 'Middleware.php';
-require_once 'services/AuthService.php';
+require_once __DIR__ . '/../services/TicketService.php';
+require_once __DIR__ . '/../services/PaymentService.php';
+require_once __DIR__ . '/../repositories/TicketRepository.php';
+require_once __DIR__ . '/../repositories/FlightRepository.php';
+require_once __DIR__ . '/../repositories/UserRepository.php';
+require_once __DIR__ . '/../repositories/TransactionRepository.php';
+require_once __DIR__ . '/../repositories/CardRepository.php';
+require_once __DIR__ . '/../Middleware.php';
+require_once __DIR__ . '/../services/AuthService.php';
 
-use repositories\CardRepository;
-use repositories\TransactionRepository;
-use services\AuthService;
-use services\TicketService;
-use services\PaymentService;
 use repositories\TicketRepository;
 use repositories\FlightRepository;
 use repositories\UserRepository;
-use config\Database;
+use repositories\TransactionRepository;
+use repositories\CardRepository;
+use services\TicketService;
+use services\PaymentService;
+use services\AuthService;
 
-$pdo = Database::connect();
-$config = include './config/config.php';
-$jwtSecret = $config['jwtSecret'];
+class TicketController {
+    private $ticketService;
+    private $authService;
+    private $jwtSecret;
 
-$ticketRepository = new TicketRepository($pdo);
-$flightRepository = new FlightRepository($pdo);
-$userRepository = new UserRepository($pdo);
-$transactionRepository = new TransactionRepository($pdo);
-$cardRepository = new CardRepository($pdo);
-$paymentService = new PaymentService($userRepository, $transactionRepository, $cardRepository);
-$ticketService = new TicketService($paymentService, $ticketRepository, $flightRepository, $userRepository);
-$authService = new AuthService($userRepository, $jwtSecret);
+    public function __construct($pdo, $jwtSecret) {
+        $ticketRepository = new TicketRepository($pdo);
+        $flightRepository = new FlightRepository($pdo);
+        $userRepository = new UserRepository($pdo);
+        $transactionRepository = new TransactionRepository($pdo);
+        $cardRepository = new CardRepository($pdo);
 
-header('Content-Type: application/json');
-
-try {
-    $method = $_SERVER['REQUEST_METHOD'];
-    $path = explode('/', trim($_SERVER['PATH_INFO'], '/'));
-
-    // Middleware integration: Authenticate user unless endpoint is public
-    $user = null;
-    if (!in_array($path[1], ['login', 'register'], true)) {
-        $user = authMiddleware($jwtSecret);
+        $paymentService = new PaymentService($userRepository, $transactionRepository, $cardRepository);
+        $this->ticketService = new TicketService($paymentService, $ticketRepository, $flightRepository, $userRepository);
+        $this->authService = new AuthService($userRepository, $jwtSecret);
+        $this->jwtSecret = $jwtSecret;
     }
 
-    if ($method === 'POST' && $path[0] === 'tickets' && $path[1] === 'sell') {
-        // POST /tickets/sell
+    public function handleRequest($method, $path) {
+        try {
+            $user = null;
+            if (!in_array($path[1], ['login', 'register'], true)) {
+                $user = authMiddleware($this->jwtSecret);
+            }
+
+            if ($method === 'POST' && count($path) === 2 && $path[0] === 'tickets' && $path[1] === 'sell') {
+                $this->sellTicket($user);
+            } elseif ($method === 'POST' && count($path) === 2 && $path[0] === 'tickets' && $path[1] === 'refund') {
+                $this->refundTicket($user);
+            } elseif ($method === 'GET' && count($path) === 2 && $path[0] === 'tickets' && $path[1] === 'user') {
+                $this->getTicketsByUser($user);
+            } else {
+                http_response_code(404);
+                echo json_encode(["error" => "Endpoint not found"]);
+            }
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
+    }
+
+    private function sellTicket($user) {
         $data = json_decode(file_get_contents('php://input'), true);
 
         $flightId = $data['flightId'] ?? null;
@@ -59,13 +73,13 @@ try {
             throw new RuntimeException("Missing required fields.");
         }
 
-        // Ensure the user is the owner or superuser
         authorizeOwner($user['id'], (int)$userId);
 
-        $ticketService->sellTicket($flightId, $userId, $cardId, $ticketOwnerFullName, $paymentMethod);
+        $this->ticketService->sellTicket($flightId, $userId, $cardId, $ticketOwnerFullName, $paymentMethod);
         echo json_encode(["success" => true, "message" => "Ticket sold successfully."]);
-    } elseif ($method === 'POST' && $path[0] === 'tickets' && $path[1] === 'refund') {
-        // POST /tickets/refund
+    }
+
+    private function refundTicket($user) {
         $data = json_decode(file_get_contents('php://input'), true);
 
         $userId = $data['userId'] ?? null;
@@ -76,29 +90,22 @@ try {
             throw new RuntimeException("Missing required fields.");
         }
 
-        // Ensure the user is the owner or superuser
         authorizeOwner($user['id'], (int)$userId);
 
-        $ticketService->refundTicket($userId, $ticketId);
+        $this->ticketService->refundTicket($userId, $ticketId);
         echo json_encode(["success" => true, "message" => "Ticket refunded successfully."]);
-    } elseif ($method === 'GET' && $path[0] === 'tickets' && $path[1] === 'user') {
-        // GET /tickets/user?id=123
+    }
+
+    private function getTicketsByUser($user) {
         $userId = $_GET['id'] ?? null;
 
         if (!$userId) {
             throw new RuntimeException("User ID is required.");
         }
 
-        // Ensure the user is the owner or superuser
         authorizeOwner($user['id'], (int)$userId);
 
-        $tickets = $ticketService->getAllTicketsByUserId($userId);
+        $tickets = $this->ticketService->getAllTicketsByUserId($userId);
         echo json_encode($tickets);
-    } else {
-        http_response_code(404);
-        echo json_encode(["error" => "Endpoint not found"]);
     }
-} catch (Exception $e) {
-    http_response_code(400);
-    echo json_encode(["error" => $e->getMessage()]);
 }

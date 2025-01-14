@@ -1,34 +1,43 @@
 <?php
+
 require_once __DIR__ . '/../services/AirportService.php';
 require_once __DIR__ . '/../repositories/AirportRepository.php';
 require_once __DIR__ . '/../config/Database.php';
-require_once __DIR__ . '/../domain/Airport.php';
 
 use repositories\AirportRepository;
 use services\AirportService;
-use config\Database;
 
-$pdo = Database::connect();
+class AirportController {
+    private $airportService;
 
-$airportRepository = new AirportRepository($pdo);
-$airportService = new AirportService($airportRepository);
-
-header('Content-Type: application/json');
-
-try {
-    $method = $_SERVER['REQUEST_METHOD'];
-    $path = explode('/', trim($_SERVER['PATH_INFO'], '/'));
-
-    if ($method === 'GET' && $path[0] === 'airports') {
-        // GET /airports
-        $airports = $airportService->getAllAirports();
-
-        echo json_encode($airports);
-    } else {
-        http_response_code(404);
-        echo json_encode(["error" => "Endpoint not found"]);
+    public function __construct($pdo) {
+        $airportRepository = new AirportRepository($pdo);
+        $this->airportService = new AirportService($airportRepository);
     }
-} catch (Exception $e) {
-    http_response_code(400);
-    echo json_encode(["error" => $e->getMessage()]);
+
+    public function handleRequest($method, $path) {
+        try {
+            if ($method === 'GET' && count($path) === 1 && $path[0] === 'airports') {
+                $this->getAllAirports();
+            }else if ($method === 'GET' && count($path) === 2 && $path[0] === 'airports' && $path[1] === 'get') {
+                $this->getAirportById();
+            } else {
+                http_response_code(404);
+                echo json_encode(["error" => "Endpoint not found"]);
+            }
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
+    }
+
+    private function getAllAirports() {
+        $airports = $this->airportService->getAllAirports();
+        echo json_encode($airports);
+    }
+    private function getAirportById() {
+        $id = $_GET['id'] ?? null;
+        $airports = $this->airportService->getAirportsById($id);
+        echo json_encode($airports);
+    }
 }

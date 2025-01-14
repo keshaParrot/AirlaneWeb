@@ -1,74 +1,97 @@
 <?php
 
 require_once __DIR__ . '/../services/AuthService.php';
-require_once __DIR__ . '/../repositories/UserRepository.php';
-require_once __DIR__ . '/../config/Database.php';
-require_once __DIR__ . '/../domain/User.php';
-require_once __DIR__ . '/../Middleware.php';
 
 use services\AuthService;
-use repositories\UserRepository;
-use config\Database;
 
-// Database connection
-$pdo = Database::connect();
-$config = include './config/config.php';
-$jwtSecret = $config['jwtSecret'];
+class AuthController {
+    private AuthService $service;
 
-$userRepository = new UserRepository($pdo);
-$authService = new AuthService($userRepository, $jwtSecret);
+    public function __construct($pdo, $jwtSecret) {
 
-header('Content-Type: application/json');
+        $this->service = new AuthService($pdo, $jwtSecret);
+    }
 
-try {
-    $method = $_SERVER['REQUEST_METHOD'];
-    $path = explode('/', trim($_SERVER['PATH_INFO'], '/'));
+    public function handleRequest($method, $path) {
+        try {
+            // POST /auth/login
+            if ($method === 'POST' && count($path) === 2 && $path[1] === 'login') {
+                $this->login();
+                return;
+            }
 
-    if ($method === 'POST' && $path[0] === 'auth' && $path[1] === 'register') {
-        // POST /auth/register
+            // POST /auth/register
+            if ($method === 'POST' && count($path) === 2 && $path[1] === 'register') {
+                $this->register();
+                return;
+            }
+
+            // POST /auth/refresh
+            if ($method === 'POST' && count($path) === 2 && $path[1] === 'refresh') {
+                $this->refreshToken();
+                return;
+            }
+
+            http_response_code(404);
+            echo json_encode(["error" => "Endpoint not found"]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
+    }
+
+    private function login() {
         $data = json_decode(file_get_contents('php://input'), true);
-
-        $email = $data['email'] ?? null;
-        $password = $data['password'] ?? null;
-        $firstName = $data['firstName'] ?? null;
-        $lastName = $data['lastName'] ?? null;
-
-        if (!$email || !$password || !$firstName || !$lastName) {
-            throw new RuntimeException("Missing required fields.");
+        if (!$data || !isset($data['username']) || !isset($data['password'])) {
+            http_response_code(400);
+            echo json_encode(["error" => "Invalid input"]);
+            return;
         }
 
-        $authService->register($email, $password, $firstName, $lastName);
-        echo json_encode(["success" => true, "message" => "User registered successfully."]);
-    } elseif ($method === 'POST' && $path[0] === 'auth' && $path[1] === 'login') {
-        // POST /auth/login
+        $response = $this->service->login($data['username'], $data['password']);
+        if ($response) {
+            echo json_encode($response);
+        } else {
+            http_response_code(401);
+            echo json_encode(["error" => "Invalid credentials"]);
+        }
+    }
+
+    private function register() {
         $data = json_decode(file_get_contents('php://input'), true);
-
-        $email = $data['email'] ?? null;
-        $password = $data['password'] ?? null;
-
-        if (!$email || !$password) {
-            throw new RuntimeException("Email and password are required.");
+        if (!$data || !isset($data['username']) || !isset($data['password'])) {
+            http_response_code(400);
+            echo json_encode(["error" => "Invalid input"]);
+            return;
         }
 
-        $token = $authService->login($email, $password);
-        echo json_encode(["success" => true, "token" => $token]);
-    } elseif ($method === 'POST' && $path[0] === 'auth' && $path[1] === 'refresh') {
-        // POST /auth/refresh
-        $data = json_decode(file_get_contents('php://input'), true);
+        $response = $this->service->register($data);
+        if ($response) {
+            http_response_code(201);
+            echo json_encode($response);
+        } else {
+            http_response_code(400);
+            echo json_encode(["error" => "Registration failed"]);
+        }
+    }
 
+    private function refreshToken() {
+        $data = json_decode(file_get_contents('php://input'), true);
         $token = $data['token'] ?? null;
 
         if (!$token) {
-            throw new RuntimeException("Token is required.");
+            http_response_code(400);
+            echo json_encode(["error" => "Token is required."]);
+            return;
         }
 
-        $newToken = $authService->refresh($token);
-        echo json_encode(["success" => true, "token" => $newToken]);
-    } else {
-        http_response_code(404);
-        echo json_encode(["error" => "Endpoint not found"]);
+        try {
+            $newToken = $this->service->refresh($token);
+            echo json_encode(["success" => true, "token" => $newToken]);
+        } catch (Exception $e) {
+            http_response_code(401);
+            echo json_encode(["error" => "Invalid or expired token."]);
+        }
     }
-} catch (Exception $e) {
-    http_response_code(400);
-    echo json_encode(["error" => $e->getMessage()]);
+
 }

@@ -33,7 +33,7 @@ function authMiddleware(string $jwtSecret): ?array
 
 function authorizeSuperuser(array $user): void
 {
-    if (empty($user['is_superuser']) || !$user['is_superuser']) {
+    if (empty($user['is_superuser'])) {
         http_response_code(403);
         echo json_encode(['error' => 'Forbidden: Superuser access required']);
         exit;

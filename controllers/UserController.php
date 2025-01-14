@@ -1,28 +1,41 @@
 <?php
 
-require_once 'services/UserService.php';
-require_once 'repositories/UserRepository.php';
-require_once 'config/Database.php';
-require_once 'domain/User.php';
+require_once __DIR__ . '/../services/UserService.php';
+require_once __DIR__ . '/../repositories/UserRepository.php';
+require_once __DIR__ . '/../config/Database.php';
 
 use services\UserService;
 use repositories\UserRepository;
-use config\Database;
 
-// Database connection
-$pdo = Database::connect();
+class UserController {
+    private $userService;
+    private $jwtSecret;
 
-$userRepository = new UserRepository($pdo);
-$userService = new UserService($userRepository);
+    public function __construct($pdo, $jwtSecret) {
+        $userRepository = new UserRepository($pdo);
+        $this->userService = new UserService($userRepository);
+        $this->jwtSecret = $jwtSecret;
+    }
 
-header('Content-Type: application/json');
+    public function handleRequest($method, $path) {
+        try {
+            if ($method === 'PUT' && count($path) === 2 && $path[0] === 'users' && $path[1] === 'update') {
+                $this->updateUser();
+            } elseif ($method === 'GET' && count($path) === 2 && $path[0] === 'users' && $path[1] === 'get') {
+                $this->getUserById();
+            } else {
+                http_response_code(404);
+                echo json_encode(["error" => "Endpoint not found"]);
+            }
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
+    }
 
-try {
-    $method = $_SERVER['REQUEST_METHOD'];
-    $path = explode('/', trim($_SERVER['PATH_INFO'], '/'));
+    private function updateUser() {
+        $user = authMiddleware($this->jwtSecret);
 
-    if ($method === 'PUT' && $path[0] === 'users' && $path[1] === 'update') {
-        // PUT /users/update
         $data = json_decode(file_get_contents('php://input'), true);
 
         $id = $data['id'] ?? null;
@@ -36,27 +49,30 @@ try {
             throw new RuntimeException("User ID is required.");
         }
 
-        $success = $userService->updateUser((int)$id, $email, $firstName, $lastName, $walletBalance, $cardId);
+        authorizeOwner($user['id'], (int)$id);
+
+        $success = $this->userService->updateUser((int)$id, $email, $firstName, $lastName, $walletBalance, $cardId);
         echo json_encode(["success" => $success]);
-    } elseif ($method === 'GET' && $path[0] === 'users' && $path[1] === 'get') {
-        // GET /users/get?id=123
+    }
+
+
+    private function getUserById() {
+        $user = authMiddleware($this->jwtSecret);
+
         $id = $_GET['id'] ?? null;
 
         if (!$id) {
             throw new RuntimeException("User ID is required.");
         }
 
-        $user = $userService->getById((int)$id);
-        if (!$user) {
+        authorizeOwner($user['id'], (int)$id);
+
+        $userData = $this->userService->getById((int)$id);
+        if (!$userData) {
             throw new RuntimeException("User not found.");
         }
 
-        echo json_encode($user);
-    } else {
-        http_response_code(404);
-        echo json_encode(["error" => "Endpoint not found"]);
+        echo json_encode($userData);
     }
-} catch (Exception $e) {
-    http_response_code(400);
-    echo json_encode(["error" => $e->getMessage()]);
+
 }

@@ -32,4 +32,9 @@ class AirplaneService
 
         return $airplanes;
     }
+
+    public function getById($id)
+    {
+        return $this->airplaneRepository->getById($id)??null;
+    }
 }

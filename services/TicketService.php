@@ -37,7 +37,8 @@ class TicketService
         $transactionAmount = $flight->price;
 
         if($this->paymentService->withdrawMoney($transactionAmount, $userId, "BUY_TICKET", $cardId, $paymentMethod)){
-            $now = new DateTime()->format('Y-m-d H:i:s');
+            $date = new DateTime();
+            $now = $date->format('Y-m-d H:i:s');
             $this->ticketRepository->addTicket($now, $flightId, $userId, $ticketOwnerFullName, $transactionAmount);
         }
     }
@@ -64,7 +65,8 @@ class TicketService
 
     private function isTicketCanBeRefunded($ticket): bool{
         $flight = $this->flightRepository->getById($ticket->flightId);
-        $now = new DateTime()->format('Y-m-d H:i:s');
+        $date = new DateTime();
+        $now = $date->format('Y-m-d H:i:s');
 
         if($now > $flight->arrivalDate->modify('+2 hours')){
             return false;

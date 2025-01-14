@@ -2,32 +2,48 @@
 
 require_once __DIR__ . '/../services/FlightService.php';
 require_once __DIR__ . '/../repositories/FlightRepository.php';
-require_once __DIR__ . '/../config/Database.php';
-require_once __DIR__ . '/../Middleware.php';
 require_once __DIR__ . '/../services/AuthService.php';
+require_once __DIR__ . '/../Middleware.php';
 
 use repositories\FlightRepository;
 use services\AuthService;
 use services\FlightService;
-use config\Database;
 
-// Database connection
-$pdo = Database::connect();
-$config = include './config/config.php';
-$jwtSecret = $config['jwtSecret'];
+class FlightController {
+    private FlightService $service;
+    private AuthService $authService;
+    private $jwtSecret;
 
-$flightRepository = new FlightRepository($pdo);
-$flightService = new FlightService($flightRepository);
-$authService = new AuthService(new Repositories\UserRepository($pdo), $jwtSecret);
+    public function __construct($pdo, $jwtSecret) {
+        $repository = new FlightRepository($pdo);
+        $this->service = new FlightService($repository);
+        $this->authService = new AuthService(new repositories\UserRepository($pdo), $jwtSecret);
+        $this->jwtSecret = $jwtSecret;
+    }
 
-header('Content-Type: application/json');
+    public function handleRequest($method, $path) {
+        try {
+            // GET /flights
+            if ($method === 'GET' && count($path) === 1) {
+                $this->getFlights();
+                return;
+            }
 
-try {
-    $method = $_SERVER['REQUEST_METHOD'];
-    $path = explode('/', trim($_SERVER['PATH_INFO'], '/'));
+            // POST /flights
+            if ($method === 'POST' && count($path) === 1) {
+                $this->addFlight();
+                return;
+            }
 
-    if ($method === 'GET' && $path[0] === 'flights') {
-        // GET /flights with optional query parameters
+            http_response_code(404);
+            echo json_encode(["error" => "Endpoint not found"]);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(["error" => $e->getMessage()]);
+        }
+    }
+
+    private function getFlights() {
         $departure = $_GET['departure'] ?? null;
         $destination = $_GET['destination'] ?? null;
         $minPrice = isset($_GET['minPrice']) ? (float)$_GET['minPrice'] : null;
@@ -37,7 +53,7 @@ try {
         $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
         $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
 
-        $flights = $flightService->getFilteredFlights(
+        $flights = $this->service->getFilteredFlights(
             $departure,
             $destination,
             $minPrice,
@@ -49,10 +65,11 @@ try {
         );
 
         echo json_encode($flights);
-    } elseif ($method === 'POST' && $path[0] === 'flights') {
-        // POST /flights to add a new flight
-        $user = authMiddleware($jwtSecret); // Authenticate user
-        authorizeSuperuser($user); // Ensure user is a superuser
+    }
+
+    private function addFlight() {
+        $user = authMiddleware($this->jwtSecret);
+        authorizeSuperuser($user);
 
         $data = json_decode(file_get_contents('php://input'), true);
 
@@ -68,7 +85,7 @@ try {
             throw new RuntimeException("Missing required fields.");
         }
 
-        $success = $flightService->addFlight(
+        $success = $this->service->addFlight(
             (float)$price,
             $departureDateTime,
             $arrivalDateTime,
@@ -79,11 +96,5 @@ try {
         );
 
         echo json_encode(["success" => $success]);
-    } else {
-        http_response_code(404);
-        echo json_encode(["error" => "Endpoint not found"]);
     }
-} catch (Exception $e) {
-    http_response_code(400);
-    echo json_encode(["error" => $e->getMessage()]);
 }

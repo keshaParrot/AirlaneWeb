@@ -30,4 +30,9 @@ class AirportService
 
         return $airports;
     }
+
+    public function getAirportsById(mixed $id)
+    {
+        return $this->airportRepository->getById($id)??null;
+    }
 }
