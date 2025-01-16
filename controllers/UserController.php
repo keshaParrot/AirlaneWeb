@@ -6,11 +6,13 @@ require_once __DIR__ . '/../services/UserService.php';
 require_once __DIR__ . '/../repositories/UserRepository.php';
 require_once __DIR__ . '/../config/Database.php';
 
+use Exception;
+use RuntimeException;
 use services\UserService;
 use repositories\UserRepository;
 
 class UserController {
-    private $userService;
+    private UserService $userService;
     private $jwtSecret;
 
     public function __construct($pdo, $jwtSecret) {

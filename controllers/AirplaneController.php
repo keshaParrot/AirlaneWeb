@@ -6,6 +6,7 @@ require_once __DIR__ . '/../services/AirplaneService.php';
 require_once __DIR__ . '/../repositories/AirplaneRepository.php';
 require_once __DIR__ . '/../config/Database.php';
 
+use Exception;
 use repositories\AirplaneRepository;
 use services\AirplaneService;
 
@@ -37,6 +38,7 @@ class AirplaneController {
         $airplanes = $this->airplaneService->getAllAirplanes();
         echo json_encode($airplanes);
     }
+
     private function getAirplaneById() {
         $id = $_GET['id'] ?? null;
         $airplanes = $this->airplaneService->getById($id);

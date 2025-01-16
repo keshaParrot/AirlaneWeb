@@ -9,15 +9,16 @@ require_once __DIR__ . '/../repositories/CardRepository.php';
 require_once __DIR__ . '/../Middleware.php';
 require_once __DIR__ . '/../services/AuthService.php';
 
+use Exception;
 use repositories\UserRepository;
 use repositories\TransactionRepository;
 use repositories\CardRepository;
+use RuntimeException;
 use services\AuthService;
 use services\PaymentService;
 
 class PaymentController {
-    private $paymentService;
-    private $authService;
+    private PaymentService $paymentService;
     private $jwtSecret;
 
     public function __construct($pdo, $jwtSecret) {
@@ -25,7 +26,6 @@ class PaymentController {
         $transactionRepository = new TransactionRepository($pdo);
         $cardRepository = new CardRepository($pdo);
         $this->paymentService = new PaymentService($userRepository, $transactionRepository, $cardRepository);
-        $this->authService = new AuthService($userRepository, $jwtSecret);
         $this->jwtSecret = $jwtSecret;
     }
 

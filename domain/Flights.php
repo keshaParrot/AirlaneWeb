@@ -1,29 +1,40 @@
 <?php
 
 namespace domain;
-class Flights
+
+class Flights implements \JsonSerializable
 {
-    public $id;
-    public $price;
-    public $departure;
-    public $destination;
-    public $departureDateTime;
-    public $arrivalDateTime;
-    public $availableSeats;
-    public $airplane;
+    private $id;
+    private $price;
+    private $departure;
+    private $destination;
+    private $departureDateTime;
+    private $arrivalDateTime;
+    private $availableSeats;
+    private $airplane;
 
     /**
-     * @param $id
-     * @param $price
-     * @param $departure
-     * @param $destination
-     * @param $departureDateTime
-     * @param $arrivalDateTime
-     * @param $availableSeats
-     * @param $airplane
+     * Constructor for the Flights class.
+     *
+     * @param int $id
+     * @param float $price
+     * @param string $departure
+     * @param string $destination
+     * @param string $departureDateTime
+     * @param string $arrivalDateTime
+     * @param int $availableSeats
+     * @param string $airplane
      */
-    public function __construct($id, $price, $departure, $destination, $departureDateTime, $arrivalDateTime, $availableSeats, $airplane)
-    {
+    public function __construct(
+        int $id,
+        float $price,
+        string $departure,
+        string $destination,
+        string $departureDateTime,
+        string $arrivalDateTime,
+        int $availableSeats,
+        string $airplane
+    ) {
         $this->id = $id;
         $this->price = $price;
         $this->departure = $departure;
@@ -34,133 +45,97 @@ class Flights
         $this->airplane = $airplane;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getId()
+    // Getters and setters for each property
+    public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * @param mixed $id
-     */
-    public function setId($id)
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getPrice()
+    public function getPrice(): float
     {
         return $this->price;
     }
 
-    /**
-     * @param mixed $price
-     */
-    public function setPrice($price)
+    public function setPrice(float $price): void
     {
         $this->price = $price;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getDeparture()
+    public function getDeparture(): string
     {
         return $this->departure;
     }
 
-    /**
-     * @param mixed $departure
-     */
-    public function setDeparture($departure)
+    public function setDeparture(string $departure): void
     {
         $this->departure = $departure;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getDestination()
+    public function getDestination(): string
     {
         return $this->destination;
     }
 
-    /**
-     * @param mixed $destination
-     */
-    public function setDestination($destination)
+    public function setDestination(string $destination): void
     {
         $this->destination = $destination;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getDepartureDateTime()
+    public function getDepartureDateTime(): string
     {
         return $this->departureDateTime;
     }
 
-    /**
-     * @param mixed $departureDateTime
-     */
-    public function setDepartureDateTime($departureDateTime)
+    public function setDepartureDateTime(string $departureDateTime): void
     {
         $this->departureDateTime = $departureDateTime;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getArrivalDateTime()
+    public function getArrivalDateTime(): string
     {
         return $this->arrivalDateTime;
     }
 
-    /**
-     * @param mixed $arrivalDateTime
-     */
-    public function setArrivalDateTime($arrivalDateTime)
+    public function setArrivalDateTime(string $arrivalDateTime): void
     {
         $this->arrivalDateTime = $arrivalDateTime;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getAvailableSeats()
+    public function getAvailableSeats(): int
     {
         return $this->availableSeats;
     }
 
-    /**
-     * @param mixed $availableSeats
-     */
-    public function setAvailableSeats($availableSeats)
+    public function setAvailableSeats(int $availableSeats): void
     {
         $this->availableSeats = $availableSeats;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getAirplane()
+    public function getAirplane(): string
     {
         return $this->airplane;
     }
 
-    /**
-     * @param mixed $airplane
-     */
-    public function setAirplane($airplane)
+    public function setAirplane(string $airplane): void
     {
         $this->airplane = $airplane;
     }
 
-
+    public function jsonSerialize(): array {
+        return [
+            'id' => $this->id,
+            'price' => $this->price,
+            'departure' => $this->departure,
+            'destination' => $this->destination,
+            'departureDateTime' => $this->departureDateTime,
+            'arrivalDateTime' => $this->arrivalDateTime,
+            'availableSeats' => $this->availableSeats,
+            'airplane' => $this->airplane,
+        ];
+    }
 }

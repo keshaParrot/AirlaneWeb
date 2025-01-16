@@ -1,7 +1,7 @@
 <?php
 
 namespace domain;
-class ticket
+class ticket implements \JsonSerializable
 {
     public $id {
         get {
@@ -60,5 +60,14 @@ class ticket
         $this->price = $price;
     }
 
-
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'purchasedDate' => $this->purchasedDate,
+            'purchasedTime' => $this->purchasedTime,
+            'ownerFullName' => $this->ownerFullName,
+            'price' => $this->price,
+        ];
+    }
 }

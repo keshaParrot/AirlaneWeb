@@ -24,27 +24,28 @@ class FlightRepository
         int $offset = 0
     ): array {
         $sql = "
-            SELECT 
-                f.id,
-                f.price,
-                f.departure_date AS departureDateTime,
-                f.arrival_date AS arrivalDateTime,
-                ap_from.name AS departure,
-                ap_to.name AS destination,
-                a.seat_count - COALESCE((
-                    SELECT COUNT(*) 
-                    FROM airlinemanagement.Purchased_ticket pt 
-                    WHERE pt.Flight_id = f.id
-                ), 0) AS availableSeats,
-                CONCAT(a.brand, ' ', a.model) AS airplane
-            FROM airlinemanagement.Flights f
-            JOIN airlinemanagement.Airports ap_from ON f.departure_airport_id = ap_from.id
-            JOIN airlinemanagement.Airports ap_to ON f.destination_airport_id = ap_to.id
-            JOIN airlinemanagement.Airplanes a ON f.airplane_id = a.id
-            WHERE 1=1
-        ";
+        SELECT 
+            f.id,
+            f.price,
+            f.departure_date AS departureDateTime,
+            f.arrival_date AS arrivalDateTime,
+            ap_from.name AS departure,
+            ap_to.name AS destination,
+            a.seat_count - COALESCE((
+                SELECT COUNT(*) 
+                FROM airlinemanagement.Purchased_ticket pt 
+                WHERE pt.Flight_id = f.id
+            ), 0) AS availableSeats,
+            CONCAT(a.brand, ' ', a.model) AS airplane
+        FROM airlinemanagement.Flights f
+        JOIN airlinemanagement.Airports ap_from ON f.departure_airport_id = ap_from.id
+        JOIN airlinemanagement.Airports ap_to ON f.destination_airport_id = ap_to.id
+        JOIN airlinemanagement.Airplanes a ON f.airplane_id = a.id
+        WHERE 1=1
+    ";
 
         $params = [];
+
         if ($departure) {
             $sql .= " AND ap_from.name LIKE :departure";
             $params[':departure'] = '%' . $departure . '%';
@@ -75,7 +76,16 @@ class FlightRepository
         $params[':offset'] = $offset;
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
+
+        foreach ($params as $key => $value) {
+            if (in_array($key, [':limit', ':offset'])) {
+                $stmt->bindValue($key, (int) $value, \PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue($key, $value);
+            }
+        }
+
+        $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

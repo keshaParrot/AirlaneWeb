@@ -1,7 +1,7 @@
 <?php
 
 namespace domain;
-class User
+class User implements \JsonSerializable
 {
 
     public $id;
@@ -107,5 +107,15 @@ class User
     {
         $this->isSuperUser = $isSuperUser;
     }
-
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'firstName' => $this->firstName,
+            'lastName' => $this->lastName,
+            'email' => $this->email,
+            'isSuperUser' => $this->isSuperUser,
+            'walletBalance' => $this->walletBalance,
+        ];
+    }
 }

@@ -28,12 +28,12 @@ class Airplane
             $this->model = $value;
         }
     }
-    private $internamNumber {
+    private $internalNumber {
         get {
-            return $this->internamNumber;
+            return $this->internalNumber;
         }
         set {
-            $this->internamNumber = $value;
+            $this->internalNumber = $value;
         }
     }
     private $registrationNumber {
@@ -66,10 +66,20 @@ class Airplane
         $this->id = $id;
         $this->brand = $brand;
         $this->model = $model;
-        $this->internamNumber = $internamNumber;
+        $this->internalNumber = $internamNumber;
         $this->registrationNumber = $registrationNumber;
         $this->seatCount = $seatCount;
     }
-
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'brand' => $this->brand,
+            'model' => $this->model,
+            'internalNumber' => $this->internalNumber,
+            'registrationNumber' => $this->registrationNumber,
+            'seatCount' => $this->seatCount,
+        ];
+    }
 
 }

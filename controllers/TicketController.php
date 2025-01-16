@@ -12,18 +12,19 @@ require_once __DIR__ . '/../repositories/CardRepository.php';
 require_once __DIR__ . '/../Middleware.php';
 require_once __DIR__ . '/../services/AuthService.php';
 
+use Exception;
 use repositories\TicketRepository;
 use repositories\FlightRepository;
 use repositories\UserRepository;
 use repositories\TransactionRepository;
 use repositories\CardRepository;
+use RuntimeException;
 use services\TicketService;
 use services\PaymentService;
 use services\AuthService;
 
 class TicketController {
-    private $ticketService;
-    private $authService;
+    private TicketService $ticketService;
     private $jwtSecret;
 
     public function __construct($pdo, $jwtSecret) {
@@ -35,7 +36,6 @@ class TicketController {
 
         $paymentService = new PaymentService($userRepository, $transactionRepository, $cardRepository);
         $this->ticketService = new TicketService($paymentService, $ticketRepository, $flightRepository, $userRepository);
-        $this->authService = new AuthService($userRepository, $jwtSecret);
         $this->jwtSecret = $jwtSecret;
     }
 

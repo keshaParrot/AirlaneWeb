@@ -7,8 +7,10 @@ require_once __DIR__ . '/../repositories/UserRepository.php';
 require_once __DIR__ . '/../repositories/VerificationCodeRepository.php';
 require_once __DIR__ . '/../config/Database.php';
 
+use Exception;
 use repositories\UserRepository;
 use repositories\VerificationCodeRepository;
+use RuntimeException;
 use services\PasswordRecoveryService;
 
 class PasswordRecoveryController {

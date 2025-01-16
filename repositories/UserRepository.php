@@ -13,21 +13,34 @@ class UserRepository
         $this->pdo = $pdo;
     }
 
-    public function save($email, $password, $firstName, $lastName): bool
+    public function save($email, $password, $firstName, $lastName): int
     {
         $walletBalance = 0.00;
         $cardId = null;
-        $sql = "INSERT INTO airlinemanagement.Users (email, password, first_name, last_name, wallet_balance, card_id)
-                VALUES (:email, :password, :first_name, :last_name, :wallet_balance, :card_id)";
+        $sql = "INSERT INTO airlinemanagement.Users (email, password, first_name, last_name, wallet_balance, card_id, is_active)
+            VALUES (:email, :password, :first_name, :last_name, :wallet_balance, :card_id, :is_active)";
         $stmt = $this->pdo->prepare($sql);
 
-        return $stmt->execute([
+        $stmt->execute([
             ':email' => $email,
             ':password' => password_hash($password, PASSWORD_BCRYPT),
             ':first_name' => $firstName,
             ':last_name' => $lastName,
             ':wallet_balance' => $walletBalance,
-            ':card_id' => $cardId
+            ':card_id' => $cardId,
+            ':is_active' =>0
+        ]);
+
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    public function markAsActive(int $id): bool
+    {
+        $sql = "UPDATE airlinemanagement.users SET is_active = 1 WHERE users.id = :id";
+        $stmt = $this->pdo->prepare($sql);
+
+        return $stmt->execute([
+            ':id' => $id,
         ]);
     }
 

@@ -6,6 +6,7 @@ require_once __DIR__ . '/../services/AirportService.php';
 require_once __DIR__ . '/../repositories/AirportRepository.php';
 require_once __DIR__ . '/../config/Database.php';
 
+use Exception;
 use repositories\AirportRepository;
 use services\AirportService;
 

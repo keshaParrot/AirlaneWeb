@@ -2,6 +2,7 @@
 
 namespace services;
 
+use domain\Flights;
 use repositories\FlightRepository;
 
 class FlightService {

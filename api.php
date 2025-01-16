@@ -2,6 +2,7 @@
 
 
 require_once __DIR__ . '/config/Database.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 // Підключаємо всі контролери
 require_once __DIR__ . '/controllers/AirplaneController.php';

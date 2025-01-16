@@ -11,5 +11,13 @@
   ],
   "require": {
     "kreait/firebase-php": "^7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "domain\\": "domain/",
+      "services\\": "services/",
+      "repositories\\": "repositories/",
+      "controllers\\": "controllers/"
+    }
   }
 }

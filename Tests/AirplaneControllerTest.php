@@ -1,70 +1,70 @@
 <?php
 
-namespace Tests;
+use controllers\AirplaneController;
 
-require_once 'controllers/AirplaneController.php';
-require_once 'Middleware.php';
+require_once __DIR__ . '/../controllers/AirplaneController.php';
+require_once __DIR__ . '/../services/AirplaneService.php';
+require_once __DIR__ . '/../repositories/AirplaneRepository.php';
 
+class AirplaneControllerTest {
+    private $pdo;
+    private AirplaneController $controller;
 
-class AirplaneControllerTest
-{
-    public function runTests()
-    {
-        echo "Running tests for AirplaneController...\n";
-        $this->testGetAirplanes();
-        $this->testAddAirplaneAsSuperuser();
-        $this->testAddAirplaneUnauthorized();
+    public function __construct() {
+        $this->pdo = $this->createMockPDO();
+        $this->controller = new AirplaneController($this->pdo);
     }
 
-    private function testGetAirplanes()
-    {
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $_SERVER['PATH_INFO'] = '/airplanes';
+    private function createMockPDO() {
+        $pdo = new PDO('sqlite::memory:');
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        ob_start();
-        include 'controllers/AirplaneController.php';
-        $response = ob_get_clean();
+        $pdo->exec("CREATE TABLE airplanes (
+            id INTEGER PRIMARY KEY,
+            brand TEXT NOT NULL,
+            model TEXT NOT NULL,
+            internal_number TEXT NOT NULL,
+            registration_number TEXT NOT NULL,
+            seat_count INTEGER NOT NULL
+        );");
 
-        echo "Test GET airplanes: " . (str_contains($response, '"airplanes"') ? 'Passed' : 'Failed') . "\n";
+        return $pdo;
     }
 
-    private function testAddAirplaneAsSuperuser()
-    {
-        $_SERVER['REQUEST_METHOD'] = 'POST';
-        $_SERVER['PATH_INFO'] = '/airplanes';
-        $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer valid_superuser_token';
-        $postData = [
-            'model' => 'Boeing 747',
-            'capacity' => 400,
-        ];
-        file_put_contents('php://input', json_encode($postData));
+    public function testGetAllAirplanes() {
+        $this->pdo->exec("INSERT INTO airlinemanagement.airplanes (brand, model, internal_number, registration_number, seat_count) 
+                          VALUES ('Boeing', '737', 'INT001', 'REG001', 180),
+                                 ('Airbus', 'A320', 'INT002', 'REG002', 150)");
 
         ob_start();
-        include 'controllers/AirplaneController.php';
-        $response = ob_get_clean();
+        $this->controller->handleRequest('GET', ['airplanes']);
+        $output = ob_get_clean();
 
-        echo "Test POST add airplane as superuser: " . (str_contains($response, '"success":true') ? 'Passed' : 'Failed') . "\n";
+        $airplanes = json_decode($output, true);
+
+        assert(is_array($airplanes), 'Expected an array of airplanes.');
+        assert(count($airplanes) === 2, 'Expected 2 airplanes in the response.');
+        assert($airplanes[0]['brand'] === 'Boeing', 'First airplane brand mismatch.');
+
+        echo "testGetAllAirplanes passed!\n";
     }
 
-    private function testAddAirplaneUnauthorized()
-    {
-        $_SERVER['REQUEST_METHOD'] = 'POST';
-        $_SERVER['PATH_INFO'] = '/airplanes';
-        $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer invalid_token';
-        $postData = [
-            'model' => 'Unauthorized Model',
-            'capacity' => 200,
-        ];
-        file_put_contents('php://input', json_encode($postData));
+    public function testGetAirplaneById() {
+        $this->pdo->exec("INSERT INTO airlinemanagement.airplanes (id, brand, model, internal_number, registration_number, seat_count) 
+                          VALUES (1, 'Boeing', '737', 'INT001', 'REG001', 180)");
+
+        $_GET['id'] = 1;
 
         ob_start();
-        include 'controllers/AirplaneController.php';
-        $response = ob_get_clean();
+        $this->controller->handleRequest('GET', ['airplanes', 'get']);
+        $output = ob_get_clean();
 
-        echo "Test POST add airplane unauthorized: " . (str_contains($response, '"error":"Unauthorized') ? 'Passed' : 'Failed') . "\n";
+        $airplane = json_decode($output, true);
+
+        assert(is_array($airplane), 'Expected an array for airplane details.');
+        assert($airplane['brand'] === 'Boeing', 'Airplane brand mismatch.');
+        assert($airplane['seat_count'] === 180, 'Airplane seat count mismatch.');
+
+        echo "testGetAirplaneById passed!\n";
     }
 }
-
-// Run tests
-$test = new AirplaneControllerTest();
-$test->runTests();

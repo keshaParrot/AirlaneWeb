@@ -2,7 +2,8 @@
 
 namespace domain;
 
-class Airport
+
+class Airport implements \JsonSerializable
 {
     private int $id {
         get {
@@ -71,5 +72,15 @@ class Airport
         $this->street = $street;
     }
 
-
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'country' => $this->country,
+            'region' => $this->region,
+            'city' => $this->city,
+            'street' => $this->street,
+        ];
+    }
 }

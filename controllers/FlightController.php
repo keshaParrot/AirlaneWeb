@@ -7,19 +7,19 @@ require_once __DIR__ . '/../repositories/FlightRepository.php';
 require_once __DIR__ . '/../services/AuthService.php';
 require_once __DIR__ . '/../Middleware.php';
 
+use Exception;
 use repositories\FlightRepository;
+use RuntimeException;
 use services\AuthService;
 use services\FlightService;
 
 class FlightController {
     private FlightService $service;
-    private AuthService $authService;
     private $jwtSecret;
 
     public function __construct($pdo, $jwtSecret) {
         $repository = new FlightRepository($pdo);
         $this->service = new FlightService($repository);
-        $this->authService = new AuthService(new repositories\UserRepository($pdo), $jwtSecret);
         $this->jwtSecret = $jwtSecret;
     }
 
