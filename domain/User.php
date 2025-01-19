@@ -28,6 +28,10 @@ class User implements \JsonSerializable
         $this->walletBalance = $walletBalance;
     }
 
+    public function isSuperUser(): bool{
+        return $this->isSuperUser===1;
+    }
+
     /**
      * @return mixed
      */

@@ -46,11 +46,11 @@ class PaymentService
             throw new \RuntimeException("Insufficient funds in wallet.");
         }
 
-        elseif ($paymentMethod === 'debit' && !$this->validateUserCard($cardId)) {
+        elseif ($paymentMethod === 'debit' && !$this->validateUserCard($userId, $cardId)) {
             throw new \RuntimeException("card does not exist or you dont have a money.");
         }
 
-        return $this->addTransaction('withdraw',$userId, $amount, $transactionType, $cardId, $paymentMethod);
+        return $this->addTransaction('withdraw',$amount, $userId, $transactionType, $cardId, $paymentMethod);
     }
 
     //api
@@ -63,11 +63,11 @@ class PaymentService
             throw new \RuntimeException("User not found.");
         }
 
-        if (!$this->validateUserCard($cardId)) {
+        if (!$this->validateUserCard($userId,$cardId)) {
             throw new \RuntimeException("card does not exist or you dont have a money.");
         }
 
-        return $this->addTransaction('deposit',$userId, $amount, "DEPOSIT", $cardId, "debit");
+        return $this->addTransaction('deposit',$amount, $userId, "DEPOSIT", $cardId, "debit");
     }
     public function depositMoneyFromSystem($amount,
                                  $userId,
@@ -111,13 +111,13 @@ class PaymentService
         return $this->cardRepository->deleteCardById($cardId);
     }
 
-    private function validateUserCard($cardId) : bool
+    private function validateUserCard($userId, $cardId) : bool
     {
         $card = $this->cardRepository->getByCardId($cardId);
         if (!$card) {
             throw new \RuntimeException("card for provided user not found.");
         }
-        //TODO here is bug
+
         if (!$this->validateCardNumber($cardId)){
             throw new \RuntimeException("card not valid.");
         }
@@ -136,6 +136,7 @@ class PaymentService
         $cardId,
         $paymentMethod
     ): bool {
+        error_log($userId);
         if ($amount <= 0) {
             throw new \InvalidArgumentException("Amount must be greater than zero.");
         }
@@ -151,10 +152,10 @@ class PaymentService
             }
         }
         if ($action === 'deposit' ) {
-            if ($paymentMethod === 'System'){
+            if ($paymentMethod === 'system'){
                 $this->userRepository->addMoneyToWallet($userId, $amount);
             }
-            else if ($paymentMethod === 'Debit'){
+            else if ($paymentMethod === 'debit'){
                 //here will be logic of validate bank card is amount good, and if yes pay money
                 $this->userRepository->addMoneyToWallet($userId, $amount);
             }

@@ -2,6 +2,7 @@
 
 namespace repositories;
 
+use domain\Flights;
 use PDO;
 
 class FlightRepository
@@ -41,8 +42,8 @@ class FlightRepository
         JOIN airlinemanagement.Airports ap_from ON f.departure_airport_id = ap_from.id
         JOIN airlinemanagement.Airports ap_to ON f.destination_airport_id = ap_to.id
         JOIN airlinemanagement.Airplanes a ON f.airplane_id = a.id
-        WHERE 1=1
-    ";
+        WHERE f.departure_date > DATE_ADD(NOW(), INTERVAL 6 HOUR)
+        ";
 
         $params = [];
 
@@ -128,18 +129,50 @@ class FlightRepository
             ':airplaneId' => $airplaneId,
         ]);
     }
-    public function getById(int $flightId): ?object
-    {
-        $sql = "SELECT * FROM airlinemanagement.flights WHERE id = :flightId";
+
+    public function getById(int $id): ?Flights {
+        $sql = "
+        SELECT 
+            f.id,
+            f.price,
+            f.departure_date AS departureDateTime,
+            f.arrival_date AS arrivalDateTime,
+            ap_from.name AS departure,
+            ap_to.name AS destination,
+            a.seat_count - COALESCE((
+                SELECT COUNT(*) 
+                FROM airlinemanagement.Purchased_ticket pt 
+                WHERE pt.Flight_id = f.id
+            ), 0) AS availableSeats,
+            CONCAT(a.brand, ' ', a.model) AS airplane
+        FROM airlinemanagement.Flights f
+        JOIN airlinemanagement.Airports ap_from ON f.departure_airport_id = ap_from.id
+        JOIN airlinemanagement.Airports ap_to ON f.destination_airport_id = ap_to.id
+        JOIN airlinemanagement.Airplanes a ON f.airplane_id = a.id
+        WHERE f.id = :id
+        LIMIT 1
+        ";
+
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':flightId' => $flightId]);
+        $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
+        $stmt->execute();
 
-        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        $flightData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$data) {
-            return null;
+        if (!$flightData) {
+            return null; // Якщо рейс із вказаним ID не знайдено
         }
 
-        return (object) $data;
+        return new Flights(
+            $flightData['id'],
+            $flightData['price'],
+            $flightData['departure'],
+            $flightData['destination'],
+            $flightData['departureDateTime'],
+            $flightData['arrivalDateTime'],
+            $flightData['availableSeats'],
+            $flightData['airplane']
+        );
     }
+
 }

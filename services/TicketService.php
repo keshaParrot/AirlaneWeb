@@ -34,7 +34,7 @@ class TicketService
             throw new \RuntimeException("User not found.");
         }
 
-        $transactionAmount = $flight->price;
+        $transactionAmount = $flight->getPrice();
 
         if($this->paymentService->withdrawMoney($transactionAmount, $userId, "BUY_TICKET", $cardId, $paymentMethod)){
             $date = new DateTime();
@@ -83,11 +83,12 @@ class TicketService
 
         $tickets = [];
         foreach($rawTickets as $ticket){
+            $flight = $this->flightRepository->getById($ticket['Flight_id']);
             $tickets[] = new Ticket(
                 $ticket['id'],
-                $ticket['purchasedDate'],
-                $ticket['purchasedTime'],
-                $ticket['ownerFullName'],
+                $ticket['purchased_date'],
+                $flight->getDepartureDateTime(),
+                $ticket['user_name'],
                 $ticket['price'],
             );
         }

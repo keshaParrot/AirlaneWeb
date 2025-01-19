@@ -31,6 +31,12 @@ class FlightController {
                 return;
             }
 
+            // GET /flights/get
+            if ($method === 'GET' && count($path) === 2 && $path[1] === 'get') {
+                $this->getFlightById();
+                return;
+            }
+
             // POST /flights
             if ($method === 'POST' && count($path) === 1) {
                 $this->addFlight();
@@ -98,5 +104,21 @@ class FlightController {
         );
 
         echo json_encode(["success" => $success]);
+    }
+
+    private function getFlightById()
+    {
+        $id = $_GET['id'] ?? null;
+
+        if (!$id) {
+            throw new RuntimeException("flight ID is required.");
+        }
+
+        $flight = $this->service->getById($id);
+        if (!$flight) {
+            throw new RuntimeException("flight not found.");
+        }
+
+        echo json_encode($flight);
     }
 }

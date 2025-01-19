@@ -45,7 +45,7 @@ class VerificationCodeRepository
         $sql = "
             SELECT * 
             FROM airlinemanagement.Verification 
-            WHERE User_id = :userId AND Verification_code = :verificationCode AND used = 0
+            WHERE Verification_code = :verificationCode AND used = 0
         ";
 
         $stmt = $this->pdo->prepare($sql);

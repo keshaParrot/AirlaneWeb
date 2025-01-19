@@ -46,11 +46,12 @@ class TicketController {
                 $user = authMiddleware($this->jwtSecret);
             }
 
-            if ($method === 'POST' && count($path) === 2 && $path[0] === 'tickets' && $path[1] === 'sell') {
+            //ту логічна помилка з count($path) === 3
+            if ($method === 'POST' && count($path) === 2 && $path[1] === 'sell') {
                 $this->sellTicket($user);
-            } elseif ($method === 'POST' && count($path) === 2 && $path[0] === 'tickets' && $path[1] === 'refund') {
+            } elseif ($method === 'POST' && count($path) === 2 && $path[1] === 'refund') {
                 $this->refundTicket($user);
-            } elseif ($method === 'GET' && count($path) === 2 && $path[0] === 'tickets' && $path[1] === 'user') {
+            } elseif ($method === 'GET' && count($path) === 2 && $path[1] === 'user') {
                 $this->getTicketsByUser($user);
             } else {
                 http_response_code(404);

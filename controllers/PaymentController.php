@@ -36,18 +36,19 @@ class PaymentController {
                 $user = authMiddleware($this->jwtSecret);
             }
 
-            if ($method === 'GET' && count($path) === 2 && $path[0] === 'user' && $path[1] === 'cards') {
+            if ($method === 'GET' && count($path) === 3 && $path[0] === 'payments' && $path[1] === 'user' && $path[2] === 'cards') {
                 $this->getUserCards($user);
-            } elseif ($method === 'POST' && count($path) === 2 && $path[0] === 'user' && $path[1] === 'deposit') {
+            } elseif ($method === 'POST' && count($path) === 3 && $path[0] === 'payments' && $path[1] === 'user' && $path[2] === 'deposit') {
                 $this->deposit($user);
-            } elseif ($method === 'POST' && count($path) === 2 && $path[0] === 'user' && $path[1] === 'assign-card') {
+            } elseif ($method === 'POST' && count($path) === 3 && $path[0] === 'payments' && $path[1] === 'user' && $path[2] === 'assign-card') {
                 $this->assignCard($user);
-            } elseif ($method === 'DELETE' && count($path) === 2 && $path[0] === 'user' && $path[1] === 'remove-card') {
+            } elseif ($method === 'DELETE' && count($path) === 3 && $path[0] === 'payments' && $path[1] === 'user' && $path[2] === 'remove-card') {
                 $this->removeCard($user);
             } else {
                 http_response_code(404);
                 echo json_encode(["error" => "Endpoint not found"]);
             }
+
         } catch (Exception $e) {
             http_response_code(400);
             echo json_encode(["error" => $e->getMessage()]);

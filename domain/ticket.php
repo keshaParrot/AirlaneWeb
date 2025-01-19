@@ -3,59 +3,24 @@
 namespace domain;
 class ticket implements \JsonSerializable
 {
-    public $id {
-        get {
-            return $this->id;
-        }
-        set {
-            $this->id = $value;
-        }
-    }
-    public $purchasedDate {
-        get {
-            return $this->purchasedDate;
-        }
-        set {
-            $this->purchasedDate = $value;
-        }
-    }
-    public $purchasedTime {
-        get {
-            return $this->purchasedTime;
-        }
-        set {
-            $this->purchasedTime = $value;
-        }
-    }
-    public $ownerFullName {
-        get {
-            return $this->ownerFullName;
-        }
-        set {
-            $this->ownerFullName = $value;
-        }
-    }
-    public $price {
-        get {
-            return $this->price;
-        }
-        set {
-            $this->price = $value;
-        }
-    }
+    public $id;
+    public $purchasedDate;
+    public $departuretime;
+    public $ownerFullName;
+    public $price;
 
     /**
      * @param $id
      * @param $purchasedDate
-     * @param $purchasedTime
+     * @param $departuretime
      * @param $ownerFullName
      * @param $price
      */
-    public function __construct($id, $purchasedDate, $purchasedTime, $ownerFullName, $price)
+    public function __construct($id, $purchasedDate, $departuretime, $ownerFullName, $price)
     {
         $this->id = $id;
         $this->purchasedDate = $purchasedDate;
-        $this->purchasedTime = $purchasedTime;
+        $this->departuretime = $departuretime;
         $this->ownerFullName = $ownerFullName;
         $this->price = $price;
     }
@@ -65,7 +30,7 @@ class ticket implements \JsonSerializable
         return [
             'id' => $this->id,
             'purchasedDate' => $this->purchasedDate,
-            'purchasedTime' => $this->purchasedTime,
+            'departureTime' => $this->departuretime,
             'ownerFullName' => $this->ownerFullName,
             'price' => $this->price,
         ];

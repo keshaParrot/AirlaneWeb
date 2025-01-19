@@ -23,7 +23,7 @@ class UserRepository
 
         $stmt->execute([
             ':email' => $email,
-            ':password' => password_hash($password, PASSWORD_BCRYPT),
+            ':password' => $password,
             ':first_name' => $firstName,
             ':last_name' => $lastName,
             ':wallet_balance' => $walletBalance,

@@ -70,4 +70,9 @@ class FlightService {
             $createdBy
         );
     }
+
+    public function getById($id): object
+    {
+        return $this->flightRepository->getById($id);
+    }
 }

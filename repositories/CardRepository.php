@@ -72,7 +72,7 @@ class CardRepository
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':cardId' => $cardId]);
 
-        $card = $stmt->fetch(PDO::FETCH_ASSOC);
+        $card = $stmt->fetch(PDO::FETCH_OBJ);
         return $card ?: null;
     }
 }

@@ -67,18 +67,22 @@ class AuthService
         if ($codeInstance < $now){
             throw new \Exception("Code expired, code will resent on mail.");
         }
-        if ($codeInstance['user_Id'] != $userInstance['id']){
+        if ($codeInstance['User_id'] != $userInstance['id']){
             throw new \Exception("User mail not match try to go on link in mail.");
         }
-        $this->userRepository->update($userInstance['id']);
+        $this->userRepository->markAsActive($userInstance['id']);
+        $this->verificationCodeRepository->markAsUsed($codeInstance['Verification_id']);
         return true;
     }
 
     public function login(string $email, string $password): string
     {
         $userData = $this->userRepository->getByEmail($email);
-        if (!$userData || !password_verify($password, $userData['password'])) {
-            throw new \Exception("Invalid email or password.");
+        if (!$userData) {
+            throw new \Exception("Invalid email.");
+        }
+        if (!password_verify($password, $userData['password'])) {
+            throw new \Exception("Invalid password.");
         }
 
         if($userData['is_active'] != 1){
@@ -128,7 +132,7 @@ class AuthService
         $payload = [
             'id' => $user->getId(),
             'email' => $user->getEmail(),
-            'is_superuser' => $user->isSuperuser(),
+            'is_superuser' => $user->isSuperUser(),
             'exp' => time() + 3600 // Token expires in 1 hour
         ];
 
