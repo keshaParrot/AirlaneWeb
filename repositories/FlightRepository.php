@@ -8,10 +8,12 @@ use PDO;
 class FlightRepository
 {
     private PDO $pdo;
+    private string $dbName;
 
-    public function __construct(PDO $pdo)
+    public function __construct(PDO $pdo, string $dbName)
     {
         $this->pdo = $pdo;
+        $this->dbName = $dbName;
     }
 
     public function getFilteredFlightsWithDetails(
@@ -34,14 +36,14 @@ class FlightRepository
             ap_to.name AS destination,
             a.seat_count - COALESCE((
                 SELECT COUNT(*) 
-                FROM airlinemanagement.Purchased_ticket pt 
+                FROM {$this->dbName}.Purchased_ticket pt 
                 WHERE pt.Flight_id = f.id
             ), 0) AS availableSeats,
             CONCAT(a.brand, ' ', a.model) AS airplane
-        FROM airlinemanagement.Flights f
-        JOIN airlinemanagement.Airports ap_from ON f.departure_airport_id = ap_from.id
-        JOIN airlinemanagement.Airports ap_to ON f.destination_airport_id = ap_to.id
-        JOIN airlinemanagement.Airplanes a ON f.airplane_id = a.id
+        FROM {$this->dbName}.Flights f
+        JOIN {$this->dbName}.Airports ap_from ON f.departure_airport_id = ap_from.id
+        JOIN {$this->dbName}.Airports ap_to ON f.destination_airport_id = ap_to.id
+        JOIN {$this->dbName}.Airplanes a ON f.airplane_id = a.id
         WHERE f.departure_date > DATE_ADD(NOW(), INTERVAL 6 HOUR)
         ";
 
@@ -100,7 +102,7 @@ class FlightRepository
         int $airplaneId
     ): bool {
         $sql = "
-            INSERT INTO airlinemanagement.flights (
+            INSERT INTO {$this->dbName}.flights (
                 price, 
                 departure_date, 
                 arrival_date, 
@@ -141,14 +143,14 @@ class FlightRepository
             ap_to.name AS destination,
             a.seat_count - COALESCE((
                 SELECT COUNT(*) 
-                FROM airlinemanagement.Purchased_ticket pt 
+                FROM {$this->dbName}.Purchased_ticket pt 
                 WHERE pt.Flight_id = f.id
             ), 0) AS availableSeats,
             CONCAT(a.brand, ' ', a.model) AS airplane
-        FROM airlinemanagement.Flights f
-        JOIN airlinemanagement.Airports ap_from ON f.departure_airport_id = ap_from.id
-        JOIN airlinemanagement.Airports ap_to ON f.destination_airport_id = ap_to.id
-        JOIN airlinemanagement.Airplanes a ON f.airplane_id = a.id
+        FROM {$this->dbName}.Flights f
+        JOIN {$this->dbName}.Airports ap_from ON f.departure_airport_id = ap_from.id
+        JOIN {$this->dbName}.Airports ap_to ON f.destination_airport_id = ap_to.id
+        JOIN {$this->dbName}.Airplanes a ON f.airplane_id = a.id
         WHERE f.id = :id
         LIMIT 1
         ";

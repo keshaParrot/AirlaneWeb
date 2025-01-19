@@ -21,10 +21,10 @@ class PaymentController {
     private PaymentService $paymentService;
     private $jwtSecret;
 
-    public function __construct($pdo, $jwtSecret) {
-        $userRepository = new UserRepository($pdo);
-        $transactionRepository = new TransactionRepository($pdo);
-        $cardRepository = new CardRepository($pdo);
+    public function __construct($pdo, $jwtSecret, string $dbName = 'airlinemanagement') {
+        $userRepository = new UserRepository($pdo, $dbName);
+        $transactionRepository = new TransactionRepository($pdo, $dbName);
+        $cardRepository = new CardRepository($pdo, $dbName);
         $this->paymentService = new PaymentService($userRepository, $transactionRepository, $cardRepository);
         $this->jwtSecret = $jwtSecret;
     }

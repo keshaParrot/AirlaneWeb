@@ -17,8 +17,8 @@ class FlightController {
     private FlightService $service;
     private $jwtSecret;
 
-    public function __construct($pdo, $jwtSecret) {
-        $repository = new FlightRepository($pdo);
+    public function __construct($pdo, $jwtSecret, string $dbName = 'airlinemanagement') {
+        $repository = new FlightRepository($pdo, $dbName);
         $this->service = new FlightService($repository);
         $this->jwtSecret = $jwtSecret;
     }

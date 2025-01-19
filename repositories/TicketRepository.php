@@ -7,10 +7,12 @@ use PDO;
 class TicketRepository
 {
     private PDO $pdo;
+    private string $dbName;
 
-    public function __construct(PDO $pdo)
+    public function __construct(PDO $pdo, string $dbName)
     {
         $this->pdo = $pdo;
+        $this->dbName = $dbName;
     }
 
     public function addTicket(
@@ -21,7 +23,7 @@ class TicketRepository
         float $price
     ): bool {
         $sql = "
-            INSERT INTO airlinemanagement.Purchased_ticket (
+            INSERT INTO {$this->dbName}.Purchased_ticket (
                 ticket_number,
                 purchased_date,
                 Flight_id,
@@ -53,7 +55,7 @@ class TicketRepository
 
     public function deleteTicketById(int $id): bool
     {
-        $sql = "DELETE FROM airlinemanagement.Purchased_ticket WHERE id = :id";
+        $sql = "DELETE FROM {$this->dbName}.Purchased_ticket WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
 
         return $stmt->execute([':id' => $id]);
@@ -61,7 +63,7 @@ class TicketRepository
 
     public function getTicketsByUserId(int $userId): array
     {
-        $sql = "SELECT * FROM airlinemanagement.Purchased_ticket WHERE User_id = :userId";
+        $sql = "SELECT * FROM {$this->dbName}.Purchased_ticket WHERE User_id = :userId";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':userId' => $userId]);
 
@@ -70,7 +72,7 @@ class TicketRepository
 
     public function getTicketById(int $ticketId): ?object
     {
-        $sql = "SELECT * FROM airlinemanagement.Purchased_ticket WHERE id = :ticketId";
+        $sql = "SELECT * FROM {$this->dbName}.Purchased_ticket WHERE id = :ticketId";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':userId' => $ticketId]);
 

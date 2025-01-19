@@ -13,8 +13,8 @@ use services\AirportService;
 class AirportController {
     private $airportService;
 
-    public function __construct($pdo) {
-        $airportRepository = new AirportRepository($pdo);
+    public function __construct($pdo, string $dbName = 'airlinemanagement') {
+        $airportRepository = new AirportRepository($pdo, $dbName);
         $this->airportService = new AirportService($airportRepository);
     }
 

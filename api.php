@@ -4,7 +4,6 @@
 require_once __DIR__ . '/config/Database.php';
 require_once __DIR__ . '/vendor/autoload.php';
 
-// Підключаємо всі контролери
 require_once __DIR__ . '/controllers/AirplaneController.php';
 require_once __DIR__ . '/controllers/AirportController.php';
 require_once __DIR__ . '/controllers/AuthController.php';
@@ -24,7 +23,6 @@ use controllers\PaymentController;
 use controllers\TicketController;
 use controllers\UserController;
 
-// Підключення до бази даних
 $pdo = Database::connect();
 $config = include './config/config.php';
 $jwtSecret = $config['jwtSecret'];
@@ -45,42 +43,42 @@ try {
     // Головний маршрутизатор
     switch ($path[0]) {
         case 'airplanes':
-            $controller = new AirplaneController($pdo);
+            $controller = new AirplaneController(pdo: $pdo);
             $controller->handleRequest($method, $path);
             break;
 
         case 'airports':
-            $controller = new AirportController($pdo);
+            $controller = new AirportController(pdo: $pdo);
             $controller->handleRequest($method, $path);
             break;
 
         case 'auth':
-            $controller = new AuthController($pdo, $jwtSecret);
+            $controller = new AuthController(pdo: $pdo, jwtSecret:  $jwtSecret);
             $controller->handleRequest($method, $path);
             break;
 
         case 'flights':
-            $controller = new FlightController($pdo, $jwtSecret);
+            $controller = new FlightController(pdo: $pdo, jwtSecret:  $jwtSecret);
             $controller->handleRequest($method, $path);
             break;
 
         case 'password':
-            $controller = new PasswordRecoveryController($pdo);
+            $controller = new PasswordRecoveryController(pdo: $pdo);
             $controller->handleRequest($method, $path);
             break;
 
         case 'payments':
-            $controller = new PaymentController($pdo, $jwtSecret);
+            $controller = new PaymentController(pdo: $pdo, jwtSecret:  $jwtSecret);
             $controller->handleRequest($method, $path);
             break;
 
         case 'tickets':
-            $controller = new TicketController($pdo, $jwtSecret);
+            $controller = new TicketController(pdo: $pdo, jwtSecret:  $jwtSecret);
             $controller->handleRequest($method, $path);
             break;
 
         case 'users':
-            $controller = new UserController($pdo, $jwtSecret);
+            $controller = new UserController(pdo: $pdo, jwtSecret:  $jwtSecret);
             $controller->handleRequest($method, $path);
             break;
 

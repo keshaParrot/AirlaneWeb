@@ -7,15 +7,17 @@ use PDO;
 class AirportRepository
 {
     private PDO $pdo;
+    private string $dbName;
 
-    public function __construct(PDO $pdo)
+    public function __construct(PDO $pdo, string $dbName)
     {
         $this->pdo = $pdo;
+        $this->dbName = $dbName;
     }
 
     public function getAll(): array
     {
-        $sql = "SELECT * FROM airlinemanagement.airports";
+        $sql = "SELECT * FROM {$this->dbName}.airports";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
 
@@ -24,7 +26,7 @@ class AirportRepository
 
     public function getById($id)
     {
-        $sql = "SELECT * FROM airlinemanagement.airports where id = :id";
+        $sql = "SELECT * FROM {$this->dbName}.airports WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->execute();

@@ -5,54 +5,12 @@ namespace domain;
 
 class Airport implements \JsonSerializable
 {
-    private int $id {
-        get {
-            return $this->id;
-        }
-        set {
-            $this->id = $value;
-        }
-    }
-    private string $name {
-        get {
-            return $this->name;
-        }
-        set {
-            $this->name = $value;
-        }
-    }
-    private string $country {
-        get {
-            return $this->country;
-        }
-        set {
-            $this->country = $value;
-        }
-    }
-    private string $region {
-        get {
-            return $this->region;
-        }
-        set {
-            $this->region = $value;
-        }
-    }
-    private string $city {
-        get {
-            return $this->city;
-        }
-        set {
-            $this->city = $value;
-        }
-    }
-    private string $street {
-        get {
-            return $this->street;
-        }
-        set {
-            $this->street = $value;
-        }
-    }
+    private int $id ;
+    private string $name;
+    private string $country;
+    private string $region ;
+    private string $city ;
+    private string $street ;
 
     /**
      * @param int $id

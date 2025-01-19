@@ -13,8 +13,8 @@ use services\AirplaneService;
 class AirplaneController {
     private $airplaneService;
 
-    public function __construct($pdo) {
-        $airplaneRepository = new AirplaneRepository($pdo);
+    public function __construct($pdo, string $dbName = 'airlinemanagement') {
+        $airplaneRepository = new AirplaneRepository($pdo, $dbName);
         $this->airplaneService = new AirplaneService($airplaneRepository);
     }
 

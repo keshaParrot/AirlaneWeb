@@ -15,8 +15,8 @@ class UserController {
     private UserService $userService;
     private $jwtSecret;
 
-    public function __construct($pdo, $jwtSecret) {
-        $userRepository = new UserRepository($pdo);
+    public function __construct($pdo, $jwtSecret, string $dbName = 'airlinemanagement') {
+        $userRepository = new UserRepository($pdo, $dbName);
         $this->userService = new UserService($userRepository);
         $this->jwtSecret = $jwtSecret;
     }

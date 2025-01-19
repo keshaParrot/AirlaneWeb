@@ -8,15 +8,17 @@ use PDO;
 class CardRepository
 {
     private PDO $pdo;
+    private string $dbName;
 
-    public function __construct(PDO $pdo)
+    public function __construct(PDO $pdo, string $dbName)
     {
         $this->pdo = $pdo;
+        $this->dbName = $dbName;
     }
 
     public function cardExists(string $cardNumber): bool
     {
-        $sql = "SELECT COUNT(*) FROM airlinemanagement.card WHERE card_number = :cardNumber";
+        $sql = "SELECT COUNT(*) FROM {$this->dbName}.card WHERE card_number = :cardNumber";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':cardNumber' => $cardNumber]);
 
@@ -26,7 +28,7 @@ class CardRepository
     public function addCard(string $cardNumber, string $expiryDate): int
     {
         $sql = "
-            INSERT INTO airlinemanagement.card (
+            INSERT INTO {$this->dbName}.card (
                 card_number,
                 expiry_date
             )
@@ -47,7 +49,7 @@ class CardRepository
 
     public function deleteCardById(int $cardId): bool
     {
-        $sql = "DELETE FROM airlinemanagement.card WHERE id = :cardId";
+        $sql = "DELETE FROM {$this->dbName}.card WHERE id = :cardId";
         $stmt = $this->pdo->prepare($sql);
 
         return $stmt->execute([':cardId' => $cardId]);
@@ -56,7 +58,7 @@ class CardRepository
     {
         $sql = "
             SELECT ac.* 
-            FROM airlinemanagement.card ac
+            FROM {$this->dbName}.card ac
             INNER JOIN airlinemanagement.users u ON u.card_id = ac.id
             WHERE u.id = :userId
         ";
@@ -68,7 +70,7 @@ class CardRepository
 
     public function getByCardId(int $cardId): ?Object
     {
-        $sql = "SELECT * FROM airlinemanagement.card WHERE id = :cardId";
+        $sql = "SELECT * FROM {$this->dbName}.card WHERE id = :cardId";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':cardId' => $cardId]);
 

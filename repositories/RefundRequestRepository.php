@@ -7,10 +7,12 @@ use PDO;
 class RefundRequestRepository
 {
     private PDO $pdo;
+    private string $dbName;
 
-    public function __construct(PDO $pdo)
+    public function __construct(PDO $pdo, string $dbName)
     {
         $this->pdo = $pdo;
+        $this->dbName = $dbName;
     }
 
     public function addRefundRequest(
@@ -21,7 +23,7 @@ class RefundRequestRepository
         int $userId
     ): bool {
         $sql = "
-            INSERT INTO airlinemanagement.RefundRequest (
+            INSERT INTO {$this->dbName}.RefundRequest (
                 Request_date,
                 Refund_status,
                 Refund_amount,
@@ -50,7 +52,7 @@ class RefundRequestRepository
 
     public function updateRefundStatus(int $refundId, string $newStatus): bool
     {
-        $sql = "UPDATE airlinemanagement.RefundRequest SET Refund_status = :newStatus WHERE Refund_id = :refundId";
+        $sql = "UPDATE {$this->dbName}.RefundRequest SET Refund_status = :newStatus WHERE Refund_id = :refundId";
         $stmt = $this->pdo->prepare($sql);
 
         return $stmt->execute([
@@ -61,7 +63,7 @@ class RefundRequestRepository
 
     public function getRefundRequestsByUserId(int $userId): array
     {
-        $sql = "SELECT * FROM airlinemanagement.RefundRequest WHERE User_id = :userId";
+        $sql = "SELECT * FROM {$this->dbName}.RefundRequest WHERE User_id = :userId";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':userId' => $userId]);
 
@@ -70,7 +72,7 @@ class RefundRequestRepository
 
     public function getRefundRequestById(int $refundId): ?array
     {
-        $sql = "SELECT * FROM airlinemanagement.RefundRequest WHERE Refund_id = :refundId";
+        $sql = "SELECT * FROM {$this->dbName}.RefundRequest WHERE Refund_id = :refundId";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':refundId' => $refundId]);
 

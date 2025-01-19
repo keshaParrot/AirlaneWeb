@@ -12,9 +12,9 @@ use services\AuthService;
 class AuthController {
     private AuthService $service;
 
-    public function __construct($pdo, $jwtSecret) {
-        $userRepository = new UserRepository($pdo);
-        $validationCodeRepository = new VerificationCodeRepository($pdo);
+    public function __construct($pdo, $jwtSecret, string $dbName = 'airlinemanagement') {
+        $userRepository = new UserRepository($pdo, $dbName);
+        $validationCodeRepository = new VerificationCodeRepository($pdo, $dbName);
         $this->service = new AuthService($userRepository, $validationCodeRepository, $jwtSecret);
     }
 

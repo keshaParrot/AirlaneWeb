@@ -16,9 +16,9 @@ use services\PasswordRecoveryService;
 class PasswordRecoveryController {
     private PasswordRecoveryService $passwordRecoveryService;
 
-    public function __construct($pdo) {
-        $userRepository = new UserRepository($pdo);
-        $verificationCodeRepository = new VerificationCodeRepository($pdo);
+    public function __construct($pdo, string $dbName = 'airlinemanagement') {
+        $userRepository = new UserRepository($pdo, $dbName);
+        $verificationCodeRepository = new VerificationCodeRepository($pdo, $dbName);
         $this->passwordRecoveryService = new PasswordRecoveryService($verificationCodeRepository, $userRepository);
     }
 

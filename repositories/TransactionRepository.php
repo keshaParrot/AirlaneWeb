@@ -7,10 +7,12 @@ use PDO;
 class TransactionRepository
 {
     private PDO $pdo;
+    private string $dbName;
 
-    public function __construct(PDO $pdo)
+    public function __construct(PDO $pdo, string $dbName)
     {
         $this->pdo = $pdo;
+        $this->dbName = $dbName;
     }
 
     public function addTransaction(
@@ -22,7 +24,7 @@ class TransactionRepository
         string $paymentMethod
     ): bool {
         $sql = "
-            INSERT INTO airlinemanagement.Transaction (
+            INSERT INTO {$this->dbName}.Transaction (
                 amount,
                 User_id,
                 transaction_type,
@@ -54,7 +56,7 @@ class TransactionRepository
 
     public function deleteTransactionById(int $id): bool
     {
-        $sql = "DELETE FROM airlinemanagement.Transaction WHERE id = :id";
+        $sql = "DELETE FROM {$this->dbName}.Transaction WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
 
         return $stmt->execute([':id' => $id]);
@@ -62,7 +64,7 @@ class TransactionRepository
 
     public function getTransactionsByUserId(int $userId): array
     {
-        $sql = "SELECT * FROM airlinemanagement.Transaction WHERE User_id = :userId";
+        $sql = "SELECT * FROM {$this->dbName}.Transaction WHERE User_id = :userId";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':userId' => $userId]);
 
